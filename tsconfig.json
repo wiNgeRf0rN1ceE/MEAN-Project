@@ -3,7 +3,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "target": "ES5",
-    "module": "es2015",
+    "module": "commonjs",
     "lib": [
         "es2016",
         "dom"
