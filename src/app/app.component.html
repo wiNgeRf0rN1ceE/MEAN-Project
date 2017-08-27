@@ -1,2 +1,9 @@
 	
-<h1>Добро пожаловать {{name}}!</h1>
+<h1>Добро пожаловать</h1>
+
+<ul>
+    <li *ngFor="let item of users">
+        <span>{{item.email}}</span>
+        <span>{{item.password}}</span>
+    </li>
+</ul>

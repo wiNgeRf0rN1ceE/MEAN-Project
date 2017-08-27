@@ -1,22 +1,34 @@
 import * as path from 'path';
+import * as cors from 'cors';
 import * as express from 'express';
 import * as logger from 'morgan';
 import * as bodyParser from 'body-parser';
 import * as cookieParser from 'cookie-parser';
+import errorHandler = require("errorhandler");
 import mongoose = require("mongoose");
 
+// API
+import { UserApi } from './api/user';
+
 // Creates and configures an ExpressJS web server.
-class App {
+export class Server {
 
 	// ref to Express instance
 
 	public express: express.Application;
 
+	/**
+	 * Bootstrap the Application
+	 */
+	public static bootstrap(): Server {
+		return new Server();
+	}
+
 	// Run configuration methods  on the Express instance.
 	constructor() {
 		this.express = express();
 		this.config();
-		this.routes();
+		this.api();
 	}
 
 	// Configure Express middleware
@@ -28,26 +40,49 @@ class App {
 		const mongoUrl = 'mongodb://localhost:27017/test';
         global.Promise = require("q").Promise;
         mongoose.Promise = global.Promise;
-		const connection: mongoose.Connection = mongoose.createConnection(mongoUrl);
-		connection.on('error', (err: any) => {
+		// const connection: mongoose.Connection = mongoose.createConnection(mongoUrl);
+		// connection.on('error', (err: any) => {
+		// 	console.log(err);
+		// });
+		mongoose.connect(mongoUrl);
+		mongoose.connection.on('error', (err: any) => {
 			console.log(err);
 		});
+
+		// catch 404 and forward to error handler
+		this.express.use(function(err: any, req: express.Request, res: express.Response, next: express.NextFunction) {
+			err.status = 404;
+			next(err);
+		});
+
+		// error handling
+		this.express.use(errorHandler());
+
 	}
 
 	// Configure API endpoints
-	private routes(): void {
-		/* This is just to get up and running, and to make sure what we've got is
-		 * working so far. This function will change when we start to add more
-		 * API endpoints */
+	private api(): void {
+
 		let router = express.Router();
-		// placeholder route handler
-		router.get('/', (req, res, next) => {
-			res.json({
-				message: 'hello world-test!'
-			});
+
+		// configure CORS
+		const corsOptions: cors.CorsOptions = {
+			allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "X-Access-Token"],
+			credentials: true,
+			methods: "GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE",
+			origin: "http://localhost:8080",
+			preflightContinue: false
+		};
+		router.use(cors(corsOptions));
+		// root request
+		router.get("/", (req: express.Request, res: express.Response, next: express.NextFunction) => {
+			res.json({ announcement: "Welcome to our API!" });
+			next();
 		});
-		this.express.use('/', router);
+		// create API routes
+		UserApi.create(router);
+		this.express.use("/api", router);
+		// enable CORS pre-flight
+		router.options("*", cors(corsOptions));
 	}
 }
-
-export default new App().express;
