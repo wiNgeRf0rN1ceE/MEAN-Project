@@ -4,8 +4,13 @@ import * as express from 'express';
 import * as logger from 'morgan';
 import * as bodyParser from 'body-parser';
 import * as cookieParser from 'cookie-parser';
+import session = require('express-session');
 import errorHandler = require("errorhandler");
 import mongoose = require("mongoose");
+import passport = require("passport");
+import jwtStrategy = require("passport-jwt");
+import local = require('passport-local');
+import { User, UserModel } from "./models/user";
 
 // API
 import { UserApi } from './api/user';
@@ -36,7 +41,12 @@ export class Server {
 		this.express.use(logger('dev'));
 		this.express.use(bodyParser.json());
 		this.express.use(bodyParser.urlencoded({ extended: true }));
-		this.express.use(cookieParser("giveMeBrain"));
+		this.express.use(cookieParser("mySecret"));
+		this.express.use(session({
+			secret: 'mySecret',
+			resave: false,
+			saveUninitialized: true
+		}));
 		const mongoUrl = 'mongodb://localhost:27017/test';
         global.Promise = require("q").Promise;
         mongoose.Promise = global.Promise;
@@ -49,6 +59,40 @@ export class Server {
 			console.log(err);
 		});
 
+		// let opts: any = {
+		// 	jwtFromRequest: "mySecret"
+		// };
+		let opts: any = {
+			"secretOrKey": "mySecret",
+			"jwtFromRequest": "jwt"
+		};
+
+		let ExtractJwt = jwtStrategy.ExtractJwt;
+		passport.use(new jwtStrategy.Strategy(opts, function(jwt_payload, done) {
+			User.findOne({id: jwt_payload.id}, (err, user) => {
+				if (err)
+					return done(err, false)
+				if (user) {
+					return done(null, user);
+				} else {
+					return done(null, false);
+				}
+			});
+		}));
+
+        // passport.use( new local.Strategy(
+        //     (email, password, cb) => {
+        //         new UserApi().findByEmail(email, (err, user) => {
+        //             if (err) { return cb(err); }
+        //             if (!user) { return cb(null, false); }
+        //             if (user.password != password) { return cb(null, false); }
+        //             return cb(null, user);
+        //         });
+        //     }
+        // ));
+		this.express.use(passport.initialize());
+		this.express.use(passport.session());
+
 		// catch 404 and forward to error handler
 		this.express.use(function(err: any, req: express.Request, res: express.Response, next: express.NextFunction) {
 			err.status = 404;
@@ -59,6 +103,7 @@ export class Server {
 		this.express.use(errorHandler());
 
 	}
+
 
 	// Configure API endpoints
 	private api(): void {

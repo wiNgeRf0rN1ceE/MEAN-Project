@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { Validators, FormBuilder } from '@angular/forms';
 import { UserService } from './services/users.service';
+import { Router } from '@angular/router';
 
 import { User }        from './models/user';
 
@@ -8,15 +10,9 @@ import { User }        from './models/user';
   templateUrl: 'app.component.html'
 })
 export class AppComponent {
-  private users;
-  constructor(private userService: UserService) {
-  }
-
-  ngOnInit() {
-    this.getUsers();
-  }
-
-  public getUsers(): any {
-     this.userService.getUsers().subscribe(res => this.users = res);
+  private user: User = null;
+  constructor(private userService: UserService, private router: Router) {
+    this.user = this.userService.user;
+    this.userService.user_emitter.subscribe((user) => this.user = user);
   }
 }

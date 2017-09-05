@@ -1,0 +1,38 @@
+
+    <!--<form [formGroup]="form" (ngSubmit)="signin()">
+      <div class="input-group m-b-20">
+        <span class="input-group-addon"></span>
+        <div class="fg-line">
+          <input type="text" class="form-control" placeholder="E-mail" formControlName="email">
+        </div>
+      </div>
+      <div class="input-group m-b-20">
+        <span class="input-group-addon"></span>
+        <div class="fg-line">
+          <input type="password" class="form-control" placeholder="Пароль" formControlName="password">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-danger mt-3 w-100" [disabled]="!form.valid">Sign In
+        <i class="zmdi zmdi-arrow-forward"></i>
+      </button>
+    </form>-->
+
+    <div class="container">
+        <div class="card card-container">
+            <img id="profile-img" class="profile-img-card" src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" />
+            <p id="profile-name" class="profile-name-card"></p>
+            <form class="form-signin" [formGroup]="form" (ngSubmit)="signin()">
+                <span id="reauth-email" class="reauth-email"></span>
+                <input type="email" class="form-control" placeholder="E-mail" formControlName="email" autofocus>
+                <input type="password" class="form-control" placeholder="Пароль" formControlName="password">
+                <div id="remember" class="checkbox">
+                    <label>
+                        <input type="checkbox" value="remember-me"> Remember me
+                    </label>
+                </div>
+                <button class="btn btn-lg btn-primary btn-block btn-signin" type="submit"  [disabled]="!form.valid">Sign in</button>
+            </form>
+            <a href="#" class="forgot-password">Forgot the password?</a>
+        </div>
+    </div>
